@@ -30,7 +30,7 @@ namespace NetTodoApi.Controllers
 
         // GET: api/todos/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<TodoItem>> GetTodoItem(long id)
+        public async Task<ActionResult<TodoItem>> GetTodoItem(Guid id)
         {
             if (_context.TodoItems == null)
             {
@@ -50,7 +50,7 @@ namespace NetTodoApi.Controllers
         // PUT: api/todos/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTodoItem(long id, UpdateTodoItem todoItem)
+        public async Task<IActionResult> PutTodoItem(Guid id, UpdateTodoItem todoItem)
         {
             var existingTodoItem = await _context.TodoItems.FindAsync(id);
             if (existingTodoItem == null)
@@ -94,7 +94,6 @@ namespace NetTodoApi.Controllers
             var existing = _context.TodoItems.Count();
             _context.TodoItems.Add(new TodoItem
             {
-                Id = existing + 1,
                 Name = todoItem.Name,
                 IsCompleted = false
             });
@@ -105,8 +104,10 @@ namespace NetTodoApi.Controllers
 
         // DELETE: api/todos/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTodoItem(long id)
+        public async Task<IActionResult> DeleteTodoItem(Guid id)
         {
+
+            
             if (_context.TodoItems == null)
             {
                 return NotFound();
@@ -124,7 +125,7 @@ namespace NetTodoApi.Controllers
             return NoContent();
         }
 
-        private bool TodoItemExists(long id)
+        private bool TodoItemExists(Guid id)
         {
             return (_context.TodoItems?.Any(e => e.Id == id)).GetValueOrDefault();
         }

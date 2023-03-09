@@ -2,7 +2,7 @@ namespace NetTodoApi.Models;
 
 public class TodoItem
 {
-    public long Id { get; set; }
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public string Name { get; set; }
     public bool IsCompleted { get; set; }
 }
