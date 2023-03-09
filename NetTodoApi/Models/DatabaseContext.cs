@@ -1,0 +1,12 @@
+using Microsoft.EntityFrameworkCore;
+
+namespace NetTodoApi.Models;
+
+public class DatabaseContext : DbContext
+{
+    public DatabaseContext(DbContextOptions options) : base(options)
+    {
+    }
+
+    public DbSet<TodoItem> TodoItems { get; set; } = null!;
+}
