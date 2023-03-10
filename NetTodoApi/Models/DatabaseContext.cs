@@ -8,5 +8,7 @@ public class DatabaseContext : DbContext
     {
     }
 
+
+    public DbSet<User> Users { get; set; } = null!;
     public DbSet<TodoItem> TodoItems { get; set; } = null!;
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NetTodoApi.DTO.TodoItem;
@@ -7,6 +8,7 @@ namespace NetTodoApi.Controllers
 {
     [Route("api/todos")]
     [ApiController]
+    [Authorize]
     public class TodoController : ControllerBase
     {
         private readonly DatabaseContext _context;
