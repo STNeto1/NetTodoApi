@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,12 @@ namespace NetTodoApi.Controllers
             _context = context;
         }
 
+        private string? getSub(ClaimsPrincipal claims)
+        {
+            var claimsPrincipal = this.User;
+            return claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+
         // GET: api/todos
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
@@ -27,7 +34,13 @@ namespace NetTodoApi.Controllers
                 return NotFound();
             }
 
-            return await _context.TodoItems.ToListAsync();
+            var sub = getSub(User);
+            if (sub is null)
+            {
+                return Problem("Unauthorized", null, 400);
+            }
+
+            return await _context.TodoItems.Where(t => t.UserId.ToString() == sub).ToListAsync();
         }
 
         // GET: api/todos/5
@@ -39,8 +52,13 @@ namespace NetTodoApi.Controllers
                 return NotFound();
             }
 
-            var todoItem = await _context.TodoItems.FindAsync(id);
+            var sub = getSub(User);
+            if (sub is null)
+            {
+                return Problem("Unauthorized", null, 400);
+            }
 
+            var todoItem = await _context.TodoItems.Where(t => t.Id == id && t.UserId.ToString() == sub).FirstAsync();
             if (todoItem == null)
             {
                 return NotFound();
@@ -53,8 +71,14 @@ namespace NetTodoApi.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTodoItem(Guid id, UpdateTodoItem todoItem)
-        {
-            var existingTodoItem = await _context.TodoItems.FindAsync(id);
+        {    
+            var sub = getSub(User);
+            if (sub is null)
+            {
+                return Problem("Unauthorized", null, 400);
+            }
+            
+            var existingTodoItem = await _context.TodoItems.Where(t => t.Id == id && t.UserId.ToString() == sub).FirstAsync();
             if (existingTodoItem == null)
             {
                 return NotFound();
@@ -92,30 +116,41 @@ namespace NetTodoApi.Controllers
             {
                 return Problem("Entity set 'DatabaseContext.TodoItems'  is null.");
             }
+            
+            var sub = getSub(User);
+            if (sub is null)
+            {
+                return Problem("Unauthorized", null, 400);
+            }
 
-            var existing = _context.TodoItems.Count();
+     
             _context.TodoItems.Add(new TodoItem
             {
                 Name = todoItem.Name,
-                IsCompleted = false
+                IsCompleted = false,
+                UserId = Guid.Parse(sub)
             });
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTodoItem", new {id = existing + 1}, todoItem);
+            return CreatedAtAction("GetTodoItem", new {id = Guid.NewGuid()}, todoItem);
         }
 
         // DELETE: api/todos/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTodoItem(Guid id)
         {
-
-            
             if (_context.TodoItems == null)
             {
                 return NotFound();
             }
+            
+            var sub = getSub(User);
+            if (sub is null)
+            {
+                return Problem("Unauthorized", null, 400);
+            }
 
-            var todoItem = await _context.TodoItems.FindAsync(id);
+            var todoItem = await _context.TodoItems.Where(t => t.Id == id && t.UserId.ToString() == sub).FirstAsync();
             if (todoItem == null)
             {
                 return NotFound();

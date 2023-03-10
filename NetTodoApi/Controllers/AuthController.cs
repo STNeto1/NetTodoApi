@@ -88,6 +88,10 @@ namespace NetTodoApi.Controllers
             }
 
             var user = await _context.Users.Where(u => u.Id.ToString() == sub).FirstOrDefaultAsync();
+            if (user is null)
+            {
+                return Problem("Unauthorized", null, 400);
+            }
 
             return Ok(new ProfileResponse
             {
